@@ -11,6 +11,9 @@ const corsOptions = require('./config/corsOptions')
 const connectDB = require('./config/dbConn')
 const mongoose = require('mongoose')
 const PORT = process.env.PORT || 3500
+const verifyJWT = require('./middleware/verifyJWT')
+
+
 
 console.log(process.env.NODE_ENV)
 
@@ -28,6 +31,7 @@ app.use('/', express.static(path.join(__dirname, 'public')))
 
 app.use('/', require('./routes/root'))
 app.use('/auth', require('./routes/authRoutes'))
+app.use(verifyJWT)
 app.use('/users', require('./routes/userRoutes'))
 app.use('/notes', require('./routes/noteRoutes'))
 

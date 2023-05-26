@@ -1,10 +1,12 @@
 const User = require('../models/User')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken_1')
-
+const fs= require('fs')
 // @desc Login
 // @route POST /auth
 // @access Public
+const secret = fs.readFileSync('./rsPrivate.pem')
+const public_secret=fs.readFileSync('./rsPublic.pem');
 const login = async (req, res) => {
     const { username, password } = req.body
 
@@ -29,14 +31,14 @@ const login = async (req, res) => {
                 "roles": foundUser.roles
             }
         },
-        process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: '30s' }
+        secret,
+        { expiresIn: '20s',algorithm:'RS256' }
     )
 
     const refreshToken = jwt.sign(
         { "username": foundUser.username },
-        process.env.REFRESH_TOKEN_SECRET,
-        { expiresIn: '1m' }
+        secret,
+        { expiresIn: '1m' ,algorithm:'RS256'}
     )
 
     // Create secure cookie with refresh token 
@@ -63,7 +65,7 @@ const refresh = (req, res) => {
 
     jwt.verify(
         refreshToken,
-        process.env.REFRESH_TOKEN_SECRET,
+        public_secret,
         async (err, decoded) => {
             if (err) return res.status(403).json({ message: 'Forbidden' })
 
@@ -78,8 +80,8 @@ const refresh = (req, res) => {
                         "roles": foundUser.roles
                     }
                 },
-                process.env.ACCESS_TOKEN_SECRET,
-                { expiresIn: '30s' }
+                secret,
+                { expiresIn: '20s',algorithm:'RS256' }
             )
 
             res.json({ accessToken })
